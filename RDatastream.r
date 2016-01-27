@@ -26,9 +26,40 @@ getData <- function(username, password, instrument, datatype, start, end, freq) 
 						'&datekind=TimeSeries',
 						sep='')
 	resp <- getURL(paste(url_base, gsub('\\+', '%2b', url_params), sep=''))
-	data <- fromJSON(resp)
+	data <- fromJSON(gsub('NaN', 0, resp)) #Convert any incomplete time series from NaN's to 0's to allow for valid JSON parse
 	values <- data$DataTypeValues$SymbolValues[[1]]$Value[[1]]
 	dates <- as.POSIXct(as.numeric(substr(data$Dates, 7, 16)), origin='1970-01-01', 'UTC')
 	df <- data.frame(dates, values)
 	return(df)
+}
+
+getDataMatrix <- function(username, password, instruments, datatypes, start, end, freq) {
+	token <- fromJSON(getToken(username, password))$TokenValue
+	lInstruments <- paste(instruments, collapse=',')
+	lDatatypes <- paste(datatypes, collapse=',')
+	url_params <- paste('Data?token=', token,
+						'&instrument=', lInstruments,
+						'&datatypes=', lDatatypes,
+						'&start=', start,
+						'&end=', end,
+						'&freq=', freq,
+						'&datekind=TimeSeries&props=IsList',
+						sep='')
+	resp <- getURL(paste(url_base, gsub('\\+', '%2b', url_params), sep=''))
+	data <- fromJSON(gsub('NaN', 0, resp)) #Convert any incomplete time series from NaN's to 0's to allow for valid JSON parse
+	dates <- as.POSIXct(as.numeric(substr(data$Dates, 7, 16)), origin='1970-01-01', 'UTC')
+
+	matrix.list <- c()
+	for(i in 1:length(instruments)) {
+		matrix.list[[instruments[i]]] <- data.frame(dates)
+	}
+
+	len.dTypes <- length(data$DataTypeValues$DataType)
+	for(i in 1:len.dTypes) {
+		for(j in 1:length(instruments)) {
+			matrix.list[[j]][data$DataTypeValues$DataType[i]] <- data$DataTypeValues$SymbolValues[[i]]$Value[[j]]
+		}
+	}
+
+	return(matrix.list)
 }
