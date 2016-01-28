@@ -57,7 +57,7 @@ getDataMatrix <- function(username, password, instruments, datatypes, daterange)
 	len.dTypes <- length(data$DataTypeValues$DataType)
 	for(i in 1:len.dTypes) {
 		for(j in 1:length(instruments)) {
-			if(data$DataTypeValues$DataType[i] == NULL || data$DataTypeValues$DataType[i] == '') {
+			if(data$DataTypeValues$DataType[i] == '') {
 				matrix.list[[j]] <- data$DataTypeValues$SymbolValues[[i]]$Value[[j]]
 			} else {
 				matrix.list[[j]][data$DataTypeValues$DataType[i]] <- data$DataTypeValues$SymbolValues[[i]]$Value[[j]]
