@@ -33,16 +33,16 @@ getData <- function(username, password, instrument, datatype, start, end, freq) 
 	return(df)
 }
 
-getDataMatrix <- function(username, password, instruments, datatypes, start, end, freq) {
+getDataMatrix <- function(username, password, instruments, datatypes, daterange) {
 	token <- fromJSON(getToken(username, password))$TokenValue
 	lInstruments <- paste(instruments, collapse=',')
 	lDatatypes <- paste(datatypes, collapse=',')
 	url_params <- paste('Data?token=', token,
 						'&instrument=', lInstruments,
 						'&datatypes=', lDatatypes,
-						'&start=', start,
-						'&end=', end,
-						'&freq=', freq,
+						'&start=', daterange[1],
+						'&end=', daterange[2],
+						'&freq=', daterange[3],
 						'&datekind=TimeSeries&props=IsList',
 						sep='')
 	resp <- getURL(paste(url_base, gsub('\\+', '%2b', url_params), sep=''))
@@ -57,7 +57,11 @@ getDataMatrix <- function(username, password, instruments, datatypes, start, end
 	len.dTypes <- length(data$DataTypeValues$DataType)
 	for(i in 1:len.dTypes) {
 		for(j in 1:length(instruments)) {
-			matrix.list[[j]][data$DataTypeValues$DataType[i]] <- data$DataTypeValues$SymbolValues[[i]]$Value[[j]]
+			if(data$DataTypeValues$DataType[i] == NULL || data$DataTypeValues$DataType[i] == '') {
+				matrix.list[[j]] <- data$DataTypeValues$SymbolValues[[i]]$Value[[j]]
+			} else {
+				matrix.list[[j]][data$DataTypeValues$DataType[i]] <- data$DataTypeValues$SymbolValues[[i]]$Value[[j]]
+			}
 		}
 	}
 
