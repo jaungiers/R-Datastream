@@ -16,6 +16,7 @@ To use the package you will need to have access to Thompson Reuters Datastream. 
 To retrieve multiple instruments with multiple data types use:
 
 `getDataMatrix(username, password, c(instruments), c(datatypes), c(daterange))`
+
 Where instruments and datatypes is a vector of each and daterange is a 3-item vector with order (start date, end date, frequency)
 
 This returns a named list of DataFrames, with each DataFrame representing an instrument and each instrument DataFrame containing each DataType as a column (with Date as the first column).
